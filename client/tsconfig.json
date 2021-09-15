@@ -1,11 +1,22 @@
 {
-    "compilerOptions": {
-        // DO NOT EDIT
-        "outDir": "./dist",
-        "target": "es5",
-        "module": "CommonJS",
-        "sourceMap": true,
-        // Set your preferences here for TypeScript
-        "strict": true
+  "extends": "../tsconfig-base.json",
+  "compilerOptions": {
+    // DO NOT EDIT
+    "target": "es5",
+    "module": "CommonJS",
+
+    "baseUrl": ".",
+    "outDir": "./dist",
+
+    "paths": {
+      "@core/*": [
+        "../core/*"
+      ]
     }
+  },
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
 }

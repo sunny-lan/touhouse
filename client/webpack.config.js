@@ -2,6 +2,7 @@ const path = require('path')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
     // Basic configuration
@@ -22,6 +23,7 @@ module.exports = {
         // Alway keep '.js' even though you don't use it.
         // https://github.com/webpack/webpack-dev-server/issues/720#issuecomment-268470989
         extensions: ['.ts', '.js'],
+        plugins: [new TsconfigPathsPlugin()]
     },
     output: {
         filename: 'bundle.js',
