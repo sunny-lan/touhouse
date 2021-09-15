@@ -38,7 +38,7 @@ module.exports = {
         // Do not accumulate files in ./dist
         new CleanWebpackPlugin(),
         // Copy assets to serve them
-        new CopyPlugin([{ from: 'assets', to: 'assets' }]),
+        new CopyPlugin([{ from: '../assets', to: 'assets' }]),
     ],
     devServer: {
         // webpack-dev-server configuration

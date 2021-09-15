@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import World from "@core/World";
+import {World} from "@core/index";
 
 const load = (app: PIXI.Application) => {
     return new Promise((resolve) => {
@@ -11,7 +11,6 @@ const load = (app: PIXI.Application) => {
 
 const main = async () => {
     const w=new World();
-    w.print();
     // Actual app
     let app = new PIXI.Application();
 
