@@ -1,16 +1,17 @@
 import * as PIXI from 'pixi.js';
-import {World} from "@core/index";
+import {Player, World} from "@core/index";
+import {Vec2} from "@core/util";
 
 const load = (app: PIXI.Application) => {
     return new Promise((resolve) => {
-        app.loader.add('assets/hello-world.png').load(() => {
+        app.loader.add('assets/reimu_tmp.png').load(() => {
             resolve();
         });
     });
 };
 
 const main = async () => {
-    const w=new World();
+    const w = new World();
     // Actual app
     let app = new PIXI.Application();
 
@@ -21,43 +22,76 @@ const main = async () => {
 
     // View size = windows
     app.renderer.resize(window.innerWidth, window.innerHeight);
-
     // Load assets
     await load(app);
-    let sprite = new PIXI.Sprite(
-        app.loader.resources['assets/hello-world.png'].texture
-    );
-    sprite.x = window.innerWidth / 2 - sprite.width / 2;
-    sprite.y = window.innerHeight / 2 - sprite.height / 2;
-    app.stage.addChild(sprite);
+
+    const spriteMap = new Map<any, PIXI.Sprite>()
+
+    function renderLogic() {
+
+        w.players.onAdded.push(p => {
+
+            const sprite = new PIXI.Sprite(
+                app.loader.resources['assets/reimu_tmp.png'].texture
+            );
+
+            spriteMap.set(p, sprite);
+
+            p.pos.onChange.push(pos => sprite.position.set(pos.x, pos.y))
+            app.stage.addChild(sprite);
+        });
+
+        w.players.onRemoved.push(p => {
+            const sprite = spriteMap.get(p)!;
+            app.stage.removeChild(sprite);
+            spriteMap.delete(p)
+        })
+    }
+
+    renderLogic();
+
+    const reimu = new Player();
+
+    function inputLogic() {
+        const kbdState = new Map<string, boolean>();
+        window.addEventListener("keydown", (event) => {
+            kbdState.set(event.key, true);
+            event.preventDefault();
+        }, false);
+        window.addEventListener("keyup", (event) => {
+            kbdState.set(event.key, false);
+            event.preventDefault();
+        }, false);
+
+        const directions = {
+            "ArrowLeft": new Vec2(-1, 0),
+            "ArrowRight": new Vec2(1, 0),
+            "ArrowUp": new Vec2(0, -1),
+            "ArrowDown": new Vec2(0, 1),
+        };
+
+        app.ticker.add(() => {
+            let total = new Vec2()
+            for (const [key, vec] of Object.entries(directions)) {
+                if (kbdState.get(key)) {
+                    total = total.plus(vec)
+                }
+            }
+            if (!total.equals(Vec2.ZERO)) {
+                reimu.move(total, kbdState.get("Shift"))
+            }
+        });
+    }
+    inputLogic();
+
+    w.players.add(reimu)
 
     // Handle window resizing
     window.addEventListener('resize', (e) => {
         app.renderer.resize(window.innerWidth, window.innerHeight);
-        sprite.x = window.innerWidth / 2 - sprite.width / 2;
-        sprite.y = window.innerHeight / 2 - sprite.height / 2;
     });
 
     document.body.appendChild(app.view);
-
-    let context = {
-        velocity: { x: 1, y: 1},
-        sprite
-    };
-
-    app.ticker.add(update, context);
-};
-
-// Cannot be an arrow function. Arrow functions cannot have a 'this' parameter.
-function update(this: any, delta: number) {
-    if (this.sprite.x <= 0 || this.sprite.x >= window.innerWidth - this.sprite.width) {
-        this.velocity.x = -this.velocity.x;
-    }
-    if (this.sprite.y <= 0 || this.sprite.y >= window.innerHeight - this.sprite.height) {
-        this.velocity.y = -this.velocity.y;
-    }
-    this.sprite.x += this.velocity.x;
-    this.sprite.y += this.velocity.y;
 };
 
 main();
