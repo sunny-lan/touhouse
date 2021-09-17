@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {Player, World} from "@core/index";
+import {Bullet, Player, World} from "@core/index";
 import {Vec2} from "@core/util";
 
 const load = (app: PIXI.Application) => {
@@ -25,27 +25,38 @@ const main = async () => {
     // Load assets
     await load(app);
 
-    const spriteMap = new Map<any, PIXI.Sprite>()
+    const spriteMap = new Map<any, PIXI.DisplayObject>()
 
     function renderLogic() {
+        w.enemy_bullets.onAdded.push(b=>{
+            const gfx=new PIXI.Graphics();
+            gfx.beginFill(0xff0000)
+            gfx.drawCircle(0,0,b.hitbox.radius);
+            gfx.endFill()
+            spriteMap.set(b,gfx);
+            b.hitbox.pos.link(pos => gfx.position.set(pos.x, pos.y))
+            app.stage.addChild(gfx);
+        });
 
         w.players.onAdded.push(p => {
 
-            const sprite = new PIXI.Sprite(
-                app.loader.resources['assets/reimu_tmp.png'].texture
-            );
+            const gfx=new PIXI.Graphics();
+            gfx.beginFill(0x00ff00)
+            gfx.drawCircle(0,0,p.hitbox.radius);
+            gfx.endFill()
 
-            spriteMap.set(p, sprite);
-
-            p.pos.onChange.push(pos => sprite.position.set(pos.x, pos.y))
-            app.stage.addChild(sprite);
+            p.pos.link(pos => gfx.position.set(pos.x, pos.y))
+            app.stage.addChild(gfx);
         });
 
-        w.players.onRemoved.push(p => {
+        function onRemoved(p:any) {
             const sprite = spriteMap.get(p)!;
             app.stage.removeChild(sprite);
             spriteMap.delete(p)
-        })
+        }
+        w.enemy_bullets.onRemoved.push(onRemoved)
+        w.players.onRemoved.push(onRemoved)
+
     }
 
     renderLogic();
@@ -84,7 +95,17 @@ const main = async () => {
     }
     inputLogic();
 
+    app.ticker.add(()=>{
+        w.collisionSys.checkAll()
+    })
+
     w.players.add(reimu)
+    reimu.hitbox.onCollision.push(x=>{
+        reimu.pos.set(new Vec2(100,100))
+    })
+
+    const bul=new Bullet()
+    w.enemy_bullets.add(bul)
 
     // Handle window resizing
     window.addEventListener('resize', (e) => {

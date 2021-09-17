@@ -2,7 +2,7 @@
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
     // DO NOT EDIT
-    "target": "es5",
+    "target": "ES2016",
     "module": "CommonJS",
 
     "baseUrl": ".",

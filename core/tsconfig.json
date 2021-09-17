@@ -5,6 +5,7 @@
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
-    "composite": true
+    "composite": true,
+    "lib": ["es2015"]
   }
 }

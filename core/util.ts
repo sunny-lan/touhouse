@@ -1,5 +1,11 @@
 export type Listener<T> = (v: T) => void;
 
+export function remove<T>(arr:T[], v:T){
+    const idx=arr.indexOf(v);
+    if(idx===-1)throw new Error("Could not find element")
+    arr.splice(idx)
+}
+
 export class Vec2 {
     static readonly ZERO=new Vec2()
 
@@ -63,6 +69,10 @@ export class Listenable<T> {
         }
     }
 
+    link(l:Listener<T>){
+        l(this.v);
+        this.onChange.push(l)
+    }
 }
 
 export class ListenableArray<T> {
