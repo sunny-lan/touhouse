@@ -1,7 +1,6 @@
 import {Listenable, Listener, Vec2} from "./util";
 
 export abstract class Hitbox {
-    pos = new Listenable<Vec2>(new Vec2())
     onCollision: Listener<Hitbox>[] = []
 
     processCollision(collider: Hitbox) {
@@ -12,6 +11,7 @@ export abstract class Hitbox {
 }
 
 export class CircleHitbox extends Hitbox {
+    pos = new Listenable<Vec2>(new Vec2())
     radius: number = 1
 
     constructor(radius: number = 1) {

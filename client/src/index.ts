@@ -1,14 +1,9 @@
 import * as PIXI from 'pixi.js';
 import {Bullet, Player, World} from "@core/index";
-import {Vec2} from "@core/util";
+import {remove, Vec2} from "@core/util";
+import CollisionSystem, {CircleHitbox} from "@core/CollisionSystem";
+import LevelOrchestrator, {StraightTrajectory} from "@core/LevelOrchestrator";
 
-const load = (app: PIXI.Application) => {
-    return new Promise((resolve) => {
-        app.loader.add('assets/reimu_tmp.png').load(() => {
-            resolve();
-        });
-    });
-};
 
 const main = async () => {
     const w = new World();
@@ -22,48 +17,91 @@ const main = async () => {
 
     // View size = windows
     app.renderer.resize(window.innerWidth, window.innerHeight);
-    // Load assets
-    await load(app);
 
     const spriteMap = new Map<any, PIXI.DisplayObject>()
 
-    function renderLogic() {
-        w.enemy_bullets.onAdded.push(b=>{
-            const gfx=new PIXI.Graphics();
-            gfx.beginFill(0xff0000)
-            gfx.drawCircle(0,0,b.hitbox.radius);
-            gfx.endFill()
-            spriteMap.set(b,gfx);
-            b.hitbox.pos.link(pos => gfx.position.set(pos.x, pos.y))
-            app.stage.addChild(gfx);
+    function renderLogic(w: World) {
+        w.enemy_bullets.onAdded.push(b => {
+            if (b.hitbox instanceof CircleHitbox) {
+                const gfx = new PIXI.Graphics();
+                gfx.beginFill(0xff0000)
+                gfx.drawCircle(0, 0, b.hitbox.radius);
+                gfx.endFill()
+                spriteMap.set(b, gfx);
+                b.hitbox.pos.link(pos => gfx.position.set(pos.x, pos.y))
+                app.stage.addChild(gfx);
+            }
         });
 
         w.players.onAdded.push(p => {
+            if (p.hitbox instanceof CircleHitbox) {
+                const gfx = new PIXI.Graphics();
+                gfx.beginFill(0x00ff00)
+                gfx.drawCircle(0, 0, p.hitbox.radius);
+                gfx.endFill()
 
-            const gfx=new PIXI.Graphics();
-            gfx.beginFill(0x00ff00)
-            gfx.drawCircle(0,0,p.hitbox.radius);
-            gfx.endFill()
-
-            p.pos.link(pos => gfx.position.set(pos.x, pos.y))
-            app.stage.addChild(gfx);
+                p.pos.link(pos => gfx.position.set(pos.x, pos.y))
+                app.stage.addChild(gfx);
+            }
         });
 
-        function onRemoved(p:any) {
-            const sprite = spriteMap.get(p)!;
-            app.stage.removeChild(sprite);
-            spriteMap.delete(p)
+        function onRemoved(p: any) {
+            const sprite = spriteMap.get(p);
+            if (sprite) {
+                app.stage.removeChild(sprite);
+                spriteMap.delete(p)
+            }
         }
+
         w.enemy_bullets.onRemoved.push(onRemoved)
         w.players.onRemoved.push(onRemoved)
 
     }
 
-    renderLogic();
+    renderLogic(w);
+
+    const collisionSys = new CollisionSystem([
+        'enemy_bullet', 'player',
+        'player_bullet', 'enemy'
+    ], [
+        ['enemy_bullet', 'player'],
+        ['player_bullet', 'enemy'],
+        ['player', 'enemy'],
+    ])
+
+    function initCollisionSys(w: World) {
+
+        const enemy_bullet = collisionSys.groups.get('enemy_bullet')!
+        const player = collisionSys.groups.get('player')!
+
+        w.enemy_bullets.onAdded.push(x =>
+            enemy_bullet.push(x.hitbox));
+        w.enemy_bullets.onRemoved.push(x =>
+            remove(enemy_bullet, x.hitbox));
+
+        w.players.onAdded.push(x =>
+            player.push(x.hitbox));
+        w.enemy_bullets.onRemoved.push(x =>
+            remove(player, x.hitbox));
+
+        app.ticker.add(() => {
+            collisionSys.checkAll()
+        })
+    }
+
+    initCollisionSys(w);
+
+    function initLevelOrchestrator(w: World) {
+        const orch = new LevelOrchestrator(w)
+        app.ticker.add(delta => orch.update(delta))
+    }
+
+    initLevelOrchestrator(w)
+
 
     const reimu = new Player();
 
-    function inputLogic() {
+    function inputLogic(reimu: Player) {
         const kbdState = new Map<string, boolean>();
         window.addEventListener("keydown", (event) => {
             kbdState.set(event.key, true);
@@ -93,18 +131,17 @@ const main = async () => {
             }
         });
     }
-    inputLogic();
 
-    app.ticker.add(()=>{
-        w.collisionSys.checkAll()
-    })
+    inputLogic(reimu);
+
 
     w.players.add(reimu)
-    reimu.hitbox.onCollision.push(x=>{
-        reimu.pos.set(new Vec2(100,100))
+    reimu.hitbox.onCollision.push(x => {
+        reimu.pos.set(new Vec2(100, 100))
     })
 
-    const bul=new Bullet()
+    const bul = new Bullet()
+    bul.trajectory = new StraightTrajectory(10, new Vec2(), new Vec2(1000, 1000), 1)
     w.enemy_bullets.add(bul)
 
     // Handle window resizing

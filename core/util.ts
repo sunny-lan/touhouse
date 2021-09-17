@@ -1,16 +1,20 @@
 export type Listener<T> = (v: T) => void;
 
-export function remove<T>(arr:T[], v:T){
-    const idx=arr.indexOf(v);
-    if(idx===-1)throw new Error("Could not find element")
+export function remove<T>(arr: T[], v: T) {
+    const idx = arr.indexOf(v);
+    if (idx === -1) throw new Error("Could not find element")
     arr.splice(idx)
 }
 
 export class Vec2 {
-    static readonly ZERO=new Vec2()
+    static readonly ZERO = new Vec2()
 
     x: number
     y: number
+
+    static directionVec(radians: number) {
+        return new Vec2(Math.cos(radians), Math.sin(radians))
+    }
 
     constructor(x = 0, y = 0) {
         this.x = x
@@ -18,7 +22,7 @@ export class Vec2 {
     }
 
     equals(v: Vec2): boolean {
-        return this.x ===v.x && this.y === v.y
+        return this.x === v.x && this.y === v.y
     }
 
     times(v: number): Vec2 {
@@ -69,7 +73,7 @@ export class Listenable<T> {
         }
     }
 
-    link(l:Listener<T>){
+    link(l: Listener<T>) {
         l(this.v);
         this.onChange.push(l)
     }

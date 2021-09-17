@@ -1,10 +1,18 @@
 import {Listenable, ListenableArray, remove, Vec2} from "./util";
-import CollisionSystem, {CircleHitbox} from "./CollisionSystem";
+import  {CircleHitbox, Hitbox} from "./CollisionSystem";
+
+export class Trajectory {
+
+}
 
 
 export class Bullet {
-    hitbox = new CircleHitbox(10)
+    hitbox: Hitbox = new CircleHitbox(10)
+    trajectory: Trajectory = new Trajectory()
+}
 
+export interface MoveableHitbox {
+    pos: Listenable<Vec2>
 }
 
 export class Player {
@@ -12,7 +20,7 @@ export class Player {
         return this.hitbox.pos
     }
 
-    hitbox = new CircleHitbox(10)
+    hitbox: MoveableHitbox & Hitbox = new CircleHitbox(10)
     normalSpeed = 1
     focusSpeed = 0.5
 
@@ -31,31 +39,4 @@ export class World {
     players = new ListenableArray<Player>()
     enemies = new ListenableArray<Enemy>()
 
-    collisionSys = new CollisionSystem([
-        'enemy_bullet', 'player',
-        'player_bullet', 'enemy'
-    ], [
-        ['enemy_bullet', 'player'],
-        ['player_bullet', 'enemy'],
-        ['player', 'enemy'],
-    ])
-
-    initCollisionSys() {
-        const enemy_bullet = this.collisionSys.groups.get('enemy_bullet')!
-        const player = this.collisionSys.groups.get('player')!
-
-        this.enemy_bullets.onAdded.push(x =>
-            enemy_bullet.push(x.hitbox));
-        this.enemy_bullets.onRemoved.push(x =>
-            remove(enemy_bullet, x.hitbox));
-
-        this.players.onAdded.push(x =>
-            player.push(x.hitbox));
-        this.enemy_bullets.onRemoved.push(x =>
-            remove(player, x.hitbox));
-    }
-
-    constructor() {
-        this.initCollisionSys()
-    }
 }
