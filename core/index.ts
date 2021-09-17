@@ -1,12 +1,19 @@
-import {Listenable, ListenableArray, remove, Vec2} from "./util";
-import  {CircleHitbox, Hitbox} from "./CollisionSystem";
+import {Listenable, ListenableArray, Listener, remove, Vec2} from "./util";
+import {CircleHitbox, ICollideable, Hitbox} from "./CollisionSystem";
+
+export enum CollisionGroup{
+    Player,
+    Enemy,
+    Bullet
+}
 
 export class Trajectory {
 
 }
 
 
-export class Bullet {
+export class Bullet implements ICollideable<CollisionGroup>{
+    tag=CollisionGroup.Bullet
     hitbox: Hitbox = new CircleHitbox(10)
     trajectory: Trajectory = new Trajectory()
 }
@@ -15,7 +22,10 @@ export interface MoveableHitbox {
     pos: Listenable<Vec2>
 }
 
-export class Player {
+export class Player implements ICollideable<CollisionGroup>{
+    tag=CollisionGroup.Player
+    hits=[CollisionGroup.Bullet, CollisionGroup.Enemy]
+
     get pos() {
         return this.hitbox.pos
     }
@@ -24,9 +34,22 @@ export class Player {
     normalSpeed = 1
     focusSpeed = 0.5
 
+    constructor() {
+        this.hitbox.onCollision.push(hitBy=>{
+        })
+    }
+
     move(dir: Vec2, focus: boolean = false) {
         this.pos.set(this.pos.v.plus(dir.norm().times(
             focus ? this.focusSpeed : this.normalSpeed)))
+    }
+
+    hitListeners: Listener<Bullet | Enemy>[] = []
+
+    hit(object: Bullet | Enemy) {
+        for (const hitListener of this.hitListeners) {
+            hitListener(object)
+        }
     }
 }
 

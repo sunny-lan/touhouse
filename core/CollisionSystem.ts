@@ -1,9 +1,15 @@
-import {Listenable, Listener, Vec2} from "./util";
+import {Listenable, Listener, Vec2, remove} from "./util";
+
+export interface ICollideable<Tag> {
+    hitbox: Hitbox
+    tag: Tag
+    hits?: Tag[]
+}
 
 export abstract class Hitbox {
-    onCollision: Listener<Hitbox>[] = []
+    onCollision: Listener<ICollideable<any>>[] = []
 
-    processCollision(collider: Hitbox) {
+    processCollision(collider: ICollideable<any>) {
         for (const cb of this.onCollision) {
             cb(collider)
         }
@@ -28,26 +34,35 @@ export function checkCollision(a: Hitbox, b: Hitbox) {
     throw new Error("unsupported");
 }
 
-export default class CollisionSystem<T> {
-    groups = new Map<T, Hitbox[]>();
-    collideable: [T, T][]
-    constructor(groups:T[],   collideable: [T, T][]=[]) {
+export default class CollisionSystem<Tag> {
+    private objects = new Map<Tag, ICollideable<Tag>[]>();
+
+    constructor(groups: Tag[]) {
         for (const group of groups) {
-            this.groups.set(group,[])
+            this.objects.set(group, [])
         }
-        this.collideable=collideable
+    }
+
+    add(object: ICollideable<Tag>) {
+        this.objects.get(object.tag)!.push(object)
+    }
+
+
+    remove(object: ICollideable<Tag>) {
+        remove(this.objects.get(object.tag)!, object)
     }
 
 
     checkAll() {
-        for (const [src, dst] of this.collideable) {
-            const a = this.groups.get(src)!, b = this.groups.get(dst)!;
-            //TODO self collision not supported yet
-            for (const hitbox1 of a) {
-                for (const hitbox2 of b) {
-                    if (checkCollision(hitbox1, hitbox2)) {
-                        hitbox2.processCollision(hitbox1)
-                        hitbox1.processCollision(hitbox2)
+        for (const group of this.objects.values()) {
+            for (const object of group) {
+                if (!object.hits) continue;
+                for (const tag of object.hits) {
+                    for (const otherObject of this.objects.get(tag)!) {
+                        if (checkCollision(object.hitbox, otherObject.hitbox)) {
+                            object.hitbox.processCollision(otherObject)
+                        }
+                        
                     }
                 }
             }

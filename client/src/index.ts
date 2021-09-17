@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {Bullet, Player, World} from "@core/index";
+import {Bullet, CollisionGroup, Player, World} from "@core/index";
 import {remove, Vec2} from "@core/util";
 import CollisionSystem, {CircleHitbox} from "@core/CollisionSystem";
 import LevelOrchestrator, {StraightTrajectory} from "@core/LevelOrchestrator";
@@ -60,29 +60,16 @@ const main = async () => {
 
     renderLogic(w);
 
-    const collisionSys = new CollisionSystem([
-        'enemy_bullet', 'player',
-        'player_bullet', 'enemy'
-    ], [
-        ['enemy_bullet', 'player'],
-        ['player_bullet', 'enemy'],
-        ['player', 'enemy'],
-    ])
+    const collisionSys = new CollisionSystem(Object.values(CollisionGroup))
 
     function initCollisionSys(w: World) {
 
-        const enemy_bullet = collisionSys.groups.get('enemy_bullet')!
-        const player = collisionSys.groups.get('player')!
 
-        w.enemy_bullets.onAdded.push(x =>
-            enemy_bullet.push(x.hitbox));
-        w.enemy_bullets.onRemoved.push(x =>
-            remove(enemy_bullet, x.hitbox));
+        w.enemy_bullets.onAdded.push(collisionSys.add.bind(collisionSys));
+        w.enemy_bullets.onRemoved.push(collisionSys.remove.bind(collisionSys));
 
-        w.players.onAdded.push(x =>
-            player.push(x.hitbox));
-        w.players.onRemoved.push(x =>
-            remove(player, x.hitbox));
+        w.players.onAdded.push(collisionSys.add.bind(collisionSys));
+        w.players.onRemoved.push(collisionSys.remove.bind(collisionSys));
 
         app.ticker.add(() => {
             collisionSys.checkAll()
