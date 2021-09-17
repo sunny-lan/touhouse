@@ -81,7 +81,7 @@ const main = async () => {
 
         w.players.onAdded.push(x =>
             player.push(x.hitbox));
-        w.enemy_bullets.onRemoved.push(x =>
+        w.players.onRemoved.push(x =>
             remove(player, x.hitbox));
 
         app.ticker.add(() => {
@@ -141,7 +141,7 @@ const main = async () => {
     })
 
     const bul = new Bullet()
-    bul.trajectory = new StraightTrajectory(10, new Vec2(), new Vec2(1000, 1000), 1)
+    bul.trajectory = new StraightTrajectory(10, new Vec2(), new Vec2(100, 100), 1)
     w.enemy_bullets.add(bul)
 
     // Handle window resizing
