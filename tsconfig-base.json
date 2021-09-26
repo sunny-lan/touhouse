@@ -3,6 +3,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es6",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "lib": ["ES6"]
   }
 }

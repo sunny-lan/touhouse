@@ -1,24 +1,33 @@
-import {Listenable, ListenableArray, Listener, remove, Vec2} from "./util";
+import {assert, Listenable, ListenableArray, Listener, remove, Vec2} from "./util";
 import {CircleHitbox, ICollideable, Hitbox} from "./CollisionSystem";
 import {Trajectory} from "./TrajectoryManager";
 
-export enum CollisionGroup{
+export enum CollisionGroup {
     Player,
     Enemy,
     Bullet
 }
 
 
-export class Entity{
-    world?:World
-    index:number=-1
-    init(world:World){
-        this.world=world
+export class Entity {
+    world?: World
+    id: number = 0
+    onRemoved?: Listener<void>[]
+
+    init(world: World) {
+        this.world = world
     }
+
+    addRemovedListener(l: Listener<void>) {
+        if (!this.onRemoved)
+            this.onRemoved = []
+        this.onRemoved.push(l)
+    }
+
 }
 
 export class Bullet extends Entity implements ICollideable<CollisionGroup> {
-    tag=CollisionGroup.Bullet
+    tag = CollisionGroup.Bullet
     hitbox: Hitbox = new CircleHitbox(10)
     trajectory: Trajectory = new Trajectory()
 }
@@ -27,9 +36,9 @@ export interface MoveableHitbox {
     pos: Listenable<Vec2>
 }
 
-export class Player extends Entity implements ICollideable<CollisionGroup>{
-    tag=CollisionGroup.Player
-    hitBy=[CollisionGroup.Bullet, CollisionGroup.Enemy]
+export class Player extends Entity implements ICollideable<CollisionGroup> {
+    tag = CollisionGroup.Player
+    hitBy = [CollisionGroup.Bullet, CollisionGroup.Enemy]
 
     get pos() {
         return this.hitbox.pos
@@ -42,8 +51,6 @@ export class Player extends Entity implements ICollideable<CollisionGroup>{
     init(world: World) {
         super.init(world);
 
-        this.hitbox.onCollision.push(hitBy=>{
-        })
     }
 
     move(dir: Vec2, focus: boolean = false) {
@@ -60,7 +67,7 @@ export class Player extends Entity implements ICollideable<CollisionGroup>{
     }
 }
 
-export class Enemy extends Entity{
+export class Enemy extends Entity {
 
 }
 
@@ -68,6 +75,8 @@ export class World {
     enemy_bullets = new ListenableArray<Bullet>()
     players = new ListenableArray<Player>()
     enemies = new ListenableArray<Enemy>()
+    entities = new Map<number, Entity>()
+    mainPlayer=new Listenable<Player|undefined>(undefined)
 
     constructor() {
         this.enemy_bullets.onAdded.push(this.onObjectAdded);
@@ -75,7 +84,17 @@ export class World {
         this.enemies.onAdded.push(this.onObjectAdded);
     }
 
-    onObjectAdded(obj:Entity){
+    onObjectAdded(obj: Entity) {
         obj.init(this)
+        if (this.entities.has(obj.id))
+            throw new Error(`duplicate id ${obj.id}`)
+        this.entities.set(obj.id, obj)
+    }
+
+    getByID<T extends Entity>(id: number): T {
+        const res = this.entities.get(id)
+        assert(res !== undefined)
+
+        return res as unknown as T
     }
 }

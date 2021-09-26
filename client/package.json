@@ -8,6 +8,7 @@
     "author": "Guillaume DESFORGES <aceus02@gmail.com>",
     "license": "MIT",
     "devDependencies": {
+        "@types/ws": "^8.2.0",
         "clean-webpack-plugin": "^3.0.0",
         "copy-webpack-plugin": "5.1.1",
         "html-webpack-plugin": "4.0.4",

@@ -79,7 +79,12 @@ export class Listenable<T> {
     }
 }
 
-export class ListenableArray<T> {
+interface Removable{
+    onRemoved?:Listener<void>[]
+}
+
+export class ListenableArray<T extends Removable>  {
+
     v: T[]
     onAdded: Listener<T>[] = []
     onRemoved: Listener<T>[] = []
@@ -99,13 +104,23 @@ export class ListenableArray<T> {
     remove(v: T) {
         this.v.splice(this.v.indexOf(v))
 
+        if(v.onRemoved){
+            for (const listener of v.onRemoved)
+                listener();
+        }
+
         for (const cb of this.onRemoved) {
             cb(v);
         }
     }
 }
 
-export interface MessageInterface<T>{
-    onMessage:Listener<T>[]
-    send(message:T):void
+export interface IChannel<T> {
+    onMessage: Listener<T>[]
+
+    send(message: T): void
+}
+
+export function assert(v: boolean, msg: string = 'assert failed'): asserts v{
+    if (!v) throw new Error(msg)
 }

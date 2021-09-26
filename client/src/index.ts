@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import {Bullet, CollisionGroup, Player, World} from "@core/index";
-import {remove, Vec2} from "@core/util";
+import {Bullet, CollisionGroup, Entity, Player, World} from "@core";
+import {assert, remove, Vec2} from "@core/util";
 import CollisionSystem, {CircleHitbox} from "@core/CollisionSystem";
 import TrajectoryManager, {StraightTrajectory} from "@core/TrajectoryManager";
-
+import {Channel, Client, Message} from "@core/multiplayer";
 
 const main = async () => {
     const w = new World();
@@ -86,9 +86,7 @@ const main = async () => {
     initTrajectoryManager(w)
 
 
-    const reimu = new Player();
-
-    function inputLogic(reimu: Player) {
+    function inputLogic(w:World) {
         const kbdState = new Map<string, boolean>();
         window.addEventListener("keydown", (event) => {
             kbdState.set(event.key, true);
@@ -114,22 +112,51 @@ const main = async () => {
                 }
             }
             if (!total.equals(Vec2.ZERO)) {
-                reimu.move(total, kbdState.get("Shift"))
+                w.mainPlayer.v!.move(total, kbdState.get("Shift"))
             }
         });
     }
 
-    inputLogic(reimu);
+    inputLogic(w);
 
 
-    w.players.add(reimu)
-    reimu.hitbox.onCollision.push(x => {
-        reimu.pos.set(new Vec2(100, 100))
+    w.mainPlayer.onChange.push(mainPlayer=>{
+        assert(mainPlayer!==undefined)
+        mainPlayer.hitbox.onCollision.push(x => {
+            if (x instanceof Entity)
+                console.log(`hit by ${x.id}`)
+            mainPlayer.pos.set(new Vec2(100, 100))
+        })
     })
 
-    const bul = new Bullet()
-    bul.trajectory = new StraightTrajectory(10, new Vec2(), new Vec2(100, 100), 1)
-    w.enemy_bullets.add(bul)
+    function initMulti(w:World, conn:Channel) {
+        const client=new Client(conn, w)
+    }
+    function initMulti1(w:World) {
+
+        const sck=new WebSocket('ws://localhost:8080')
+        sck.addEventListener("open", function (){
+
+            const client:Channel={
+                onMessage: [],
+                send(message: Message): void {
+                    sck.send(JSON.stringify(message))
+                }
+            };
+            sck.addEventListener('message',msg=>{
+                const conv= JSON.parse(msg.data) as unknown as Message;
+                for (const listener of client.onMessage) {
+                    listener(conv)
+                }
+            })
+            initMulti(w,client)
+        })
+    }
+    initMulti1(w)
+
+   // const bul = new Bullet()
+   // bul.trajectory = new StraightTrajectory(10, new Vec2(), new Vec2(100, 100), 1)
+  //  w.enemy_bullets.add(bul)
 
     // Handle window resizing
     window.addEventListener('resize', (e) => {

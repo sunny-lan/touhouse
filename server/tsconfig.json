@@ -1,10 +1,23 @@
 {
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist"
-  }
+    "module": "CommonJS",
+    "baseUrl": ".",
+    "lib": [],
+    "paths": {
+      "@core": [
+        "../core"
+      ],
+
+      "@core/*": [
+        "../core/*"
+      ]
+    },
+    "outDir": "./dist"
+  },
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
 }

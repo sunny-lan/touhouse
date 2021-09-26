@@ -1,0 +1,39 @@
+world:
+ - bullets
+ - players
+ - enemies
+ 
+ 
+all inherit gameobject
+ - position, angle
+ 
+ components:
+	- trajectory
+	- look
+	- hitbox
+
+
+systems:
+	render + audio
+		- access to player status for animations 
+	inputsystem
+	collision
+	multiplayer
+		- sync trajectory of bullets added
+		- possibly load level events ahead of time (need access to level system)
+		- player movement and animations -> may need to access render system
+	level
+		- control movement of all bullets
+		- possibly additional info for multiplayer to take advantage of (deterministic things)
+ 
+ 
+loader flow:
+	- level requires asset, asset should be loaded ahead of time
+ 
+other things:
+	score
+	player status?
+		- player deaths
+		- skills and ults?
+	global animations? music syncing?
+	- should be customizable in level

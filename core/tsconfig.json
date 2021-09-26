@@ -2,10 +2,10 @@
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
 
-    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "composite": true,
-    "lib": ["es2015"]
+    "lib": ["es6"],
+    "outDir": "./dist"
   }
 }
