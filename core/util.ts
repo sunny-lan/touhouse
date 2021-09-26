@@ -104,3 +104,8 @@ export class ListenableArray<T> {
         }
     }
 }
+
+export interface MessageInterface<T>{
+    onMessage:Listener<T>[]
+    send(message:T):void
+}

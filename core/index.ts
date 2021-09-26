@@ -1,5 +1,6 @@
 import {Listenable, ListenableArray, Listener, remove, Vec2} from "./util";
 import {CircleHitbox, ICollideable, Hitbox} from "./CollisionSystem";
+import {Trajectory} from "./TrajectoryManager";
 
 export enum CollisionGroup{
     Player,
@@ -7,12 +8,16 @@ export enum CollisionGroup{
     Bullet
 }
 
-export class Trajectory {
 
+export class Entity{
+    world?:World
+    index:number=-1
+    init(world:World){
+        this.world=world
+    }
 }
 
-
-export class Bullet implements ICollideable<CollisionGroup>{
+export class Bullet extends Entity implements ICollideable<CollisionGroup> {
     tag=CollisionGroup.Bullet
     hitbox: Hitbox = new CircleHitbox(10)
     trajectory: Trajectory = new Trajectory()
@@ -22,9 +27,9 @@ export interface MoveableHitbox {
     pos: Listenable<Vec2>
 }
 
-export class Player implements ICollideable<CollisionGroup>{
+export class Player extends Entity implements ICollideable<CollisionGroup>{
     tag=CollisionGroup.Player
-    hits=[CollisionGroup.Bullet, CollisionGroup.Enemy]
+    hitBy=[CollisionGroup.Bullet, CollisionGroup.Enemy]
 
     get pos() {
         return this.hitbox.pos
@@ -34,7 +39,9 @@ export class Player implements ICollideable<CollisionGroup>{
     normalSpeed = 1
     focusSpeed = 0.5
 
-    constructor() {
+    init(world: World) {
+        super.init(world);
+
         this.hitbox.onCollision.push(hitBy=>{
         })
     }
@@ -53,7 +60,7 @@ export class Player implements ICollideable<CollisionGroup>{
     }
 }
 
-export class Enemy {
+export class Enemy extends Entity{
 
 }
 
@@ -62,4 +69,13 @@ export class World {
     players = new ListenableArray<Player>()
     enemies = new ListenableArray<Enemy>()
 
+    constructor() {
+        this.enemy_bullets.onAdded.push(this.onObjectAdded);
+        this.players.onAdded.push(this.onObjectAdded);
+        this.enemies.onAdded.push(this.onObjectAdded);
+    }
+
+    onObjectAdded(obj:Entity){
+        obj.init(this)
+    }
 }

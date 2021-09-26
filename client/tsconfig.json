@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig-base.json",
   "compilerOptions": {
-    // DO NOT EDIT
     "module": "CommonJS",
 
     "baseUrl": ".",

@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import {Bullet, CollisionGroup, Player, World} from "@core/index";
 import {remove, Vec2} from "@core/util";
 import CollisionSystem, {CircleHitbox} from "@core/CollisionSystem";
-import LevelOrchestrator, {StraightTrajectory} from "@core/LevelOrchestrator";
+import TrajectoryManager, {StraightTrajectory} from "@core/TrajectoryManager";
 
 
 const main = async () => {
@@ -78,12 +78,12 @@ const main = async () => {
 
     initCollisionSys(w);
 
-    function initLevelOrchestrator(w: World) {
-        const orch = new LevelOrchestrator(w)
+    function initTrajectoryManager(w: World) {
+        const orch = new TrajectoryManager(w)
         app.ticker.add(delta => orch.update(delta))
     }
 
-    initLevelOrchestrator(w)
+    initTrajectoryManager(w)
 
 
     const reimu = new Player();

@@ -3,7 +3,7 @@ import {Listenable, Listener, Vec2, remove} from "./util";
 export interface ICollideable<Tag> {
     hitbox: Hitbox
     tag: Tag
-    hits?: Tag[]
+    hitBy?: Tag[]
 }
 
 export abstract class Hitbox {
@@ -56,8 +56,8 @@ export default class CollisionSystem<Tag> {
     checkAll() {
         for (const group of this.objects.values()) {
             for (const object of group) {
-                if (!object.hits) continue;
-                for (const tag of object.hits) {
+                if (!object.hitBy) continue;
+                for (const tag of object.hitBy) {
                     for (const otherObject of this.objects.get(tag)!) {
                         if (checkCollision(object.hitbox, otherObject.hitbox)) {
                             object.hitbox.processCollision(otherObject)
