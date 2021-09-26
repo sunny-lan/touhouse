@@ -79,11 +79,11 @@ export class Listenable<T> {
     }
 }
 
-interface Removable{
-    onRemoved?:Listener<void>[]
+interface Removable {
+    onRemoved?: Listener<void>[]
 }
 
-export class ListenableArray<T extends Removable>  {
+export class ListenableArray<T extends Removable> {
 
     v: T[]
     onAdded: Listener<T>[] = []
@@ -104,7 +104,7 @@ export class ListenableArray<T extends Removable>  {
     remove(v: T) {
         this.v.splice(this.v.indexOf(v))
 
-        if(v.onRemoved){
+        if (v.onRemoved) {
             for (const listener of v.onRemoved)
                 listener();
         }
@@ -121,6 +121,25 @@ export interface IChannel<T> {
     send(message: T): void
 }
 
-export function assert(v: boolean, msg: string = 'assert failed'): asserts v{
+export function assert(v: boolean, msg: string = 'assert failed'): asserts v {
     if (!v) throw new Error(msg)
+}
+
+let globalID=1;
+export function debugChannel<T>(i: IChannel<T>, name = globalID++): IChannel<T> {
+    const o: IChannel<T> = {
+        onMessage: [],
+        send(message: T): void {
+            console.log(name, 'send', message)
+            i.send(message)
+        }
+
+    }
+    i.onMessage.push(msg => {
+        console.log(name, 'recv', msg)
+        for (const listener of o.onMessage) {
+            listener(msg)
+        }
+    })
+    return o
 }

@@ -79,9 +79,10 @@ export class World {
     mainPlayer=new Listenable<Player|undefined>(undefined)
 
     constructor() {
-        this.enemy_bullets.onAdded.push(this.onObjectAdded);
-        this.players.onAdded.push(this.onObjectAdded);
-        this.enemies.onAdded.push(this.onObjectAdded);
+        const bound=this.onObjectAdded.bind(this)
+        this.enemy_bullets.onAdded.push(bound);
+        this.players.onAdded.push(bound);
+        this.enemies.onAdded.push(bound);
     }
 
     onObjectAdded(obj: Entity) {

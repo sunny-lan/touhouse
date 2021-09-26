@@ -1,12 +1,7 @@
 {
-    "name": "pixijs-typescript-starter",
-    "version": "0.0.1",
-    "description": "A boilerplate to start developping a PixiJS game or animation using TypeScript (VS Code & Chrome).",
     "scripts": {
         "dev": "webpack-dev-server -d"
     },
-    "author": "Guillaume DESFORGES <aceus02@gmail.com>",
-    "license": "MIT",
     "devDependencies": {
         "@types/ws": "^8.2.0",
         "clean-webpack-plugin": "^3.0.0",
@@ -21,6 +16,7 @@
         "webpack-dev-server": "^3.10.3"
     },
     "dependencies": {
-        "pixi.js": "5.2.1"
+        "pixi.js": "5.2.1",
+        "core": "workspace:1.0.0"
     }
 }

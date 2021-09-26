@@ -4,15 +4,6 @@
     "module": "CommonJS",
     "baseUrl": ".",
     "lib": [],
-    "paths": {
-      "@core": [
-        "../core"
-      ],
-
-      "@core/*": [
-        "../core/*"
-      ]
-    },
     "outDir": "./dist"
   },
   "references": [

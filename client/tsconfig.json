@@ -7,14 +7,6 @@
     "outDir": "./dist",
     "lib": ["dom","ES6"],
 
-    "paths": {
-      "@core": [
-        "../core"
-      ],
-      "@core/*": [
-        "../core/*"
-      ]
-    }
   },
   "references": [
     {

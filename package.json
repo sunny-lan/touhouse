@@ -1,0 +1,10 @@
+{
+  "name": "touhouse",
+  "private": true,
+  "devDependencies": {},
+  "workspaces": [
+    "client",
+    "core",
+    "server"
+  ]
+}

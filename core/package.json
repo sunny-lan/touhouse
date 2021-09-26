@@ -1,6 +1,7 @@
 {
-  "name": "@touhouse/core",
+  "name": "core",
   "version": "1.0.0",
+  "module": "dist/index.js",
   "dependencies": {
   }
 }

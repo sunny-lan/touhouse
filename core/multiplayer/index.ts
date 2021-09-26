@@ -46,6 +46,19 @@ export type Channel = IChannel<Message>;
 export class Client {
 
     constructor(server: Channel, w: World) {
+        w.mainPlayer.link(p => {
+            if (p === undefined) return;
+
+            p.pos.link(onPosChange)
+
+            function onPosChange(pos: Vec2) {
+                server.send({
+                    kind: MessageKind.PlayerUpdate,
+                    objectID: p!.id,
+                    pos: [pos.x, pos.y]
+                })
+            }
+        })
         server.onMessage.push(msg => {
             switch (msg.kind) {
                 case MessageKind.PlayerAdded: {
@@ -60,7 +73,7 @@ export class Client {
                     break
                 }
                 case MessageKind.YourPlayer: {
-                    w.mainPlayer.set( w.getByID<Player>(msg.objectID))
+                    w.mainPlayer.set(w.getByID<Player>(msg.objectID))
                     break
                 }
                 default:
@@ -74,6 +87,7 @@ export class Server {
     clients: Channel[] = []
     nextPlayerID = -1
     private world: World;
+    clientByPlayer=new Map<Player,Channel>()
 
     constructor(w: World) {
         this.world = w
@@ -88,9 +102,9 @@ export class Server {
                     kind: MessageKind.PlayerUpdate,
                     pos: [newPos.x, newPos.y],
                     objectID: player.id
-                })
+                }, this.clientByPlayer.get(player)!)
             }
-            player.pos.onChange.push(posChange)
+            player.pos.link(posChange)
             player.addRemovedListener(() => remove(player.pos.onChange, posChange))
         })
     }
@@ -106,9 +120,24 @@ export class Server {
         this.clients.push(client)
         client.onMessage.push(msg => this.receiveMessage(msg, client))
 
+
+        //send old objects
+        for (const player of this.world.players.v) {
+            client.send({
+                kind: MessageKind.PlayerAdded,
+                objectID: player.id
+            })
+            client.send({
+                kind: MessageKind.PlayerUpdate,
+                objectID: player.id,
+                pos: [player.pos.v.x, player.pos.v.y]
+            })
+        }
+
         //generate new player for this guy
         const p = new Player();
         p.id = this.nextPlayerID--;
+        this.clientByPlayer.set(p, client)
         this.world.players.add(p);
 
         client.send({

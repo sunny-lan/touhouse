@@ -1,6 +1,7 @@
 import {WebSocketServer} from 'ws'
-import {World} from "@core";
-import {Channel, Message, Server} from "../core/multiplayer";
+import {World} from "core";
+import {Channel, Message, Server} from "core/multiplayer";
+import {debugChannel} from "core/util";
 
 const wss = new WebSocketServer({
     port: 8080
@@ -12,15 +13,15 @@ wss.on('connection',sck=>{
     const client:Channel={
         onMessage: [],
         send(message: Message): void {
-            sck.send(message)
+            sck.send(JSON.stringify(message))
         }
     };
     sck.on('message',msg=>{
-        const conv= msg as unknown as Message;
+        const conv=JSON.parse( msg.toString()) as unknown as Message;
         for (const listener of client.onMessage) {
             listener(conv)
         }
     })
-    server.clientJoined(client)
+    server.clientJoined(debugChannel(client))
 })
 

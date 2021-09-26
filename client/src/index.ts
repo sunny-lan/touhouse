@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js';
-import {Bullet, CollisionGroup, Entity, Player, World} from "@core";
-import {assert, remove, Vec2} from "@core/util";
-import CollisionSystem, {CircleHitbox} from "@core/CollisionSystem";
-import TrajectoryManager, {StraightTrajectory} from "@core/TrajectoryManager";
-import {Channel, Client, Message} from "@core/multiplayer";
+import {Bullet, CollisionGroup, Entity, Player, World} from "core";
+import {assert, debugChannel, remove, Vec2} from "core/util";
+import CollisionSystem, {CircleHitbox} from "core/CollisionSystem";
+import TrajectoryManager, {StraightTrajectory} from "core/TrajectoryManager";
+import {Channel, Client, Message} from "core/multiplayer";
 
 const main = async () => {
     const w = new World();
@@ -130,7 +130,7 @@ const main = async () => {
     })
 
     function initMulti(w:World, conn:Channel) {
-        const client=new Client(conn, w)
+        const client=new Client(debugChannel( conn), w)
     }
     function initMulti1(w:World) {
 
