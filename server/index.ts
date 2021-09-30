@@ -12,6 +12,7 @@ const server=new Server(w)
 wss.on('connection',sck=>{
     const client:Channel={
         onMessage: [],
+        onDisconnect:[],
         send(message: Message): void {
             sck.send(JSON.stringify(message))
         }
@@ -22,6 +23,13 @@ wss.on('connection',sck=>{
             listener(conv)
         }
     })
-    server.clientJoined(debugChannel(client))
+
+    sck.on('close',()=>{
+
+        for (const listener of client.onDisconnect) {
+            listener()
+        }
+    })
+    server.clientJoined(client)
 })
 

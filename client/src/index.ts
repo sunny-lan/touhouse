@@ -130,7 +130,7 @@ const main = async () => {
     })
 
     function initMulti(w:World, conn:Channel) {
-        const client=new Client(debugChannel( conn), w)
+        const client=new Client( conn, w)
     }
     function initMulti1(w:World) {
 
@@ -139,6 +139,7 @@ const main = async () => {
 
             const client:Channel={
                 onMessage: [],
+                onDisconnect:[],
                 send(message: Message): void {
                     sck.send(JSON.stringify(message))
                 }
@@ -147,6 +148,11 @@ const main = async () => {
                 const conv= JSON.parse(msg.data) as unknown as Message;
                 for (const listener of client.onMessage) {
                     listener(conv)
+                }
+            })
+            sck.addEventListener("close", ()=>{
+                for (const listener of client.onDisconnect) {
+                    listener()
                 }
             })
             initMulti(w,client)

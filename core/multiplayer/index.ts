@@ -2,8 +2,6 @@ import {Player, World} from "../index";
 import {assert, IChannel, remove, Vec2} from "../util";
 
 export enum MessageKind {
-    Chat,
-    Time,
     PlayerUpdate,
     PlayerAdded,
     YourPlayer,
@@ -11,15 +9,6 @@ export enum MessageKind {
 
 export interface AnyMessage {
     kind: MessageKind
-}
-
-export interface Chat extends AnyMessage {
-    kind: MessageKind.Chat
-}
-
-export interface Tick extends AnyMessage {
-    kind: MessageKind.Time
-    time: number
 }
 
 export interface ObjectMessage extends AnyMessage {
@@ -39,7 +28,7 @@ export interface YourPlayer extends ObjectMessage {
     kind: MessageKind.YourPlayer
 }
 
-export type Message = Chat | Tick | PlayerUpdate | PlayerAdded | YourPlayer;
+export type Message = PlayerUpdate | PlayerAdded | YourPlayer;
 
 export type Channel = IChannel<Message>;
 
@@ -87,7 +76,7 @@ export class Server {
     clients: Channel[] = []
     nextPlayerID = -1
     private world: World;
-    clientByPlayer=new Map<Player,Channel>()
+    clientByPlayer = new Map<Player, Channel>()
 
     constructor(w: World) {
         this.world = w
@@ -142,9 +131,15 @@ export class Server {
 
         client.send({
             kind: MessageKind.YourPlayer,
-            objectID: p.id
+            objectID: p.id  
+        })
+
+        client.onDisconnect.push(() => {
+            remove(this.clients, client)
+            this.world.players.remove(p)
         })
     }
+
 
     receiveMessage(message: Message, clientFrom: Channel) {
         switch (message.kind) {

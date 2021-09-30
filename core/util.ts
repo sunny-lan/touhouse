@@ -117,6 +117,7 @@ export class ListenableArray<T extends Removable> {
 
 export interface IChannel<T> {
     onMessage: Listener<T>[]
+    onDisconnect: Listener<void>[]
 
     send(message: T): void
 }
@@ -129,6 +130,7 @@ let globalID=1;
 export function debugChannel<T>(i: IChannel<T>, name = globalID++): IChannel<T> {
     const o: IChannel<T> = {
         onMessage: [],
+        onDisconnect:[],
         send(message: T): void {
             console.log(name, 'send', message)
             i.send(message)
@@ -139,6 +141,12 @@ export function debugChannel<T>(i: IChannel<T>, name = globalID++): IChannel<T> 
         console.log(name, 'recv', msg)
         for (const listener of o.onMessage) {
             listener(msg)
+        }
+    })
+    i.onDisconnect.push(() => {
+        console.log(name, 'disconnect')
+        for (const listener of o.onDisconnect) {
+            listener()
         }
     })
     return o
